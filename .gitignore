@@ -1,0 +1,7 @@
+.vscode
+tmp.txt
+todo.txt
+src/test/files/test
+
+target/*
+!target/typechecker-main.jar
