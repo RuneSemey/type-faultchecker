@@ -656,22 +656,24 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	};
 
 	public Tau visit( Scope n, Tau T ){
-		int cutof=T.cutof();
-		T.setcutof(T.gethandlers().size());
+		int hcutof=T.hcutof();
+		int fcutof=T.fcutof();
+		T.sethcutof(T.gethandlers().size());
+		T.setfcutof(T.getunhandledFaults().size());
 		scopes.push(n.id());
 		Tau R=this.synthesize(n.body(),T);
 		if(R.ishandled()){
 			System.out.println("test");
 			Tau T1=this.synthesize(R.Handler().body(),T);
-			T.reorder(cutof);
+			T.reorder(hcutof,fcutof);
 			T=Tau.join(T,T1);
 		}else{
 			System.out.println("test6");
-			T.reorder(cutof);
-			R.reorder(cutof);
+			T.reorder(hcutof,fcutof);
+			R.reorder(hcutof,fcutof);
 			T=Tau.join(T, R);
 		}
-		T.reorder(cutof);
+		T.reorder(hcutof,fcutof);
 		scopes.pop();
 		if(scopes.empty()){
 			declareunhandled(T);

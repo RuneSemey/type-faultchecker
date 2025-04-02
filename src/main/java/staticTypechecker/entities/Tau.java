@@ -15,20 +15,23 @@ public class Tau{
     private Type T;
     private Boolean ishandeled;
     private Handler H;
-    private int cutof;
+    private int hcutof;
+    private int fcutof;
     private ArrayList<Fault> handledfaults=new ArrayList<Fault>();
     private ArrayList<Fault> unhandledfaults=new ArrayList<Fault>();
     private ArrayList<Handler> handlers= new ArrayList<Handler>();
     public Tau(Type T){
         this.T=T;
         this.ishandeled=false;
-        cutof=0;
+        hcutof=0;
+        fcutof=0;
     }
     public Tau(Type T,Fault F){
         this.T=T;
         this.ishandeled=false;
         unhandledfaults.add(F);
-        cutof=0;
+        hcutof=0;
+        fcutof=1;
 
     }
     public Tau(Type T,Fault F,Handler H){
@@ -36,31 +39,39 @@ public class Tau{
         this.ishandeled=false;
         this.unhandledfaults.add(F);
         this.handlers.add(H);
-        cutof=0;
+        hcutof=1;
+        fcutof=1;
     }
     public Boolean ishandled(){
         return this.ishandeled;
     }
-    public int cutof(){
-        return this.cutof;
+    public int hcutof(){
+        return this.hcutof;
     }
-    public void setcutof(int i){
-        this.cutof=i;
+    public void sethcutof(int i){
+        this.hcutof=i;
+    }
+    public int fcutof(){
+        return this.fcutof;
+    }
+    public void setfcutof(int i){
+        this.fcutof=i;
     }
     public ArrayList<Handler> gethandlers(){
         return this.handlers;
     }
-    public void reorder(int cutof){
-        ArrayList<Handler> H=new ArrayList(this.handlers.subList(0, this.cutof));
+    public void reorder(int hcutof,int fcutof){
+        ArrayList<Handler> H=new ArrayList(this.handlers.subList(0, this.hcutof));
         this.handlers=H;
-        this.cutof=cutof;
+        this.hcutof=hcutof;
         this.ishandeled=false;
-        ArrayList<Fault> temp=new ArrayList<Fault>(this.unhandledfaults);
+        ArrayList<Fault> F=new ArrayList(this.unhandledfaults.subList(0, this.fcutof));
+        ArrayList<Fault> temp=new ArrayList<Fault>(this.unhandledfaults.subList(this.fcutof+1, this.unhandledfaults.size()));
         this.unhandledfaults.clear();
         this.handledfaults.clear();
-        System.out.println("size"+temp.size());
+        this.unhandledfaults=F;
         addFaults(temp);
-        System.out.println(unhandledfaults.size());
+        this.fcutof=fcutof;
     }
     public void addFault(Fault F){
         if(this.unhandledfaults.contains(F)){
@@ -84,7 +95,7 @@ public class Tau{
         boolean added=false;
         if(this.ishandeled==false ){
             System.out.println("test3");
-        for (int i = this.handlers.size() - 1; i >= this.cutof; i--) {
+        for (int i = this.handlers.size() - 1; i >= this.hcutof; i--) {
             System.out.println("test4");
             if(this.ishandeled==false ){
                 if(this.handlers.get(i).id()==id){
@@ -120,7 +131,7 @@ public class Tau{
     }
     public static Tau join(Tau tau1,Tau tau2){
         
-        ArrayList<Handler> H=new ArrayList(tau2.gethandlers().subList(tau2.cutof(), tau2.gethandlers().size()));
+        ArrayList<Handler> H=new ArrayList(tau2.gethandlers().subList(tau2.hcutof(), tau2.gethandlers().size()));
         ArrayList<Fault> F=tau2.getunhandledFaults();
         tau1.changeType(tau2.getType());
         tau1.addFaults(F);
@@ -141,6 +152,3 @@ public class Tau{
         return this.T;
     }
 }
-
-
-
