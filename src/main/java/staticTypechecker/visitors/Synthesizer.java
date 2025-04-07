@@ -471,11 +471,15 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		for(Pair<OLSyntaxNode, OLSyntaxNode> p : n.children()){
 			OLSyntaxNode expression = p.key();
 			OLSyntaxNode body = p.value();
-
 			Tau typeOfEx = this.synthesize(expression, T);
 			this.check(typeOfEx.getType(), Type.BOOL(), n.context(), "Guard of if-statement is not subtype of bool { ? }. Found type:\n" + typeOfEx.getType().prettyString()); // check that expression is of type bool
 			Tau T1 = this.synthesize(body, T);
+			if(!T.ishandled() && T1.ishandled()){
+				resultType.addChoiceUnsafe(this.synthesize(T1.Handler().body(),T1).getType());
+			}
+			else{
 			resultType.addChoiceUnsafe(T1.getType());
+			}
 		}
 
 		OLSyntaxNode elseProcess = n.elseProcess();
