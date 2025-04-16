@@ -65,13 +65,21 @@ public class Tau{
         this.handlers=H;
         this.hcutof=hcutof;
         this.ishandeled=false;
+        if(this.unhandledfaults.size()>0){
         ArrayList<Fault> F=new ArrayList(this.unhandledfaults.subList(0, this.fcutof));
-        ArrayList<Fault> temp=new ArrayList<Fault>(this.unhandledfaults.subList(this.fcutof+1, this.unhandledfaults.size()));
+        ArrayList<Fault> temp=new ArrayList<Fault>(this.unhandledfaults.subList(this.fcutof, this.unhandledfaults.size()));
         this.unhandledfaults.clear();
         this.handledfaults.clear();
         this.unhandledfaults=F;
         addFaults(temp);
+        }
         this.fcutof=fcutof;
+    }
+    public void cut(){
+        ArrayList<Fault> F=new ArrayList(this.unhandledfaults.subList(0, this.fcutof));
+        this.unhandledfaults.clear();
+        this.handledfaults.clear();
+        this.unhandledfaults=F;
     }
     public void addFault(Fault F){
         if(this.unhandledfaults.contains(F)){
@@ -94,12 +102,9 @@ public class Tau{
         String id=F.id();
         boolean added=false;
         if(this.ishandeled==false ){
-            System.out.println("test3");
         for (int i = this.handlers.size() - 1; i >= this.hcutof; i--) {
-            System.out.println("test4");
             if(this.ishandeled==false ){
                 if(this.handlers.get(i).id()==id){
-                    System.out.println("test5");
                     this.ishandeled=true;
                     this.handledfaults.add(F);
                     this.H=this.handlers.get(i);

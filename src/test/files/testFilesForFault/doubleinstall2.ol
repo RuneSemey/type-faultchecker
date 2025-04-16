@@ -1,9 +1,8 @@
-include "console.iol"
 main {
 		
         install(myfault=>
-        println@Console("first install")())
+        a=10)
         throw(myfault)
         install(myfault=>
-        println@Console("second install")())
+        b=10)
 	}

@@ -467,14 +467,19 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	 */
 	public Tau visit( IfStatement n, Tau T ){
 		ChoiceType resultType = new ChoiceType();
-
+		int fcutof=T.fcutof();
+		T.setfcutof(T.getunhandledFaults().size());
+		boolean handled=false;
 		for(Pair<OLSyntaxNode, OLSyntaxNode> p : n.children()){
 			OLSyntaxNode expression = p.key();
 			OLSyntaxNode body = p.value();
 			Tau typeOfEx = this.synthesize(expression, T);
 			this.check(typeOfEx.getType(), Type.BOOL(), n.context(), "Guard of if-statement is not subtype of bool { ? }. Found type:\n" + typeOfEx.getType().prettyString()); // check that expression is of type bool
 			Tau T1 = this.synthesize(body, T);
-			if(!T.ishandled() && T1.ishandled()){
+			if(T1.ishandled()){
+				handled=true;
+			}
+			if(!T.ishandled() && T1.ishandled()){				
 				resultType.addChoiceUnsafe(this.synthesize(T1.Handler().body(),T1).getType());
 			}
 			else{
@@ -492,11 +497,18 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		
 		if(resultType.choices().size() == 1){
 			T.changeType(resultType.choices().get(0));
+			//if(handled){
+			T.cut();
+			//}
+			T.setfcutof(fcutof);
 			return T;
 		}
 			
-		T.changeType(resultType);
-		return T;
+		//if(handled){
+			T.cut();
+			//}
+			T.setfcutof(fcutof);
+			return T;
 	};
 
 	public Tau visit( DefinitionCallStatement n, Tau T ){
@@ -667,17 +679,15 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		scopes.push(n.id());
 		Tau R=this.synthesize(n.body(),T);
 		if(R.ishandled()){
-			System.out.println("test");
 			Tau T1=this.synthesize(R.Handler().body(),T);
 			T.reorder(hcutof,fcutof);
 			T=Tau.join(T,T1);
 		}else{
-			System.out.println("test6");
 			T.reorder(hcutof,fcutof);
 			R.reorder(hcutof,fcutof);
 			T=Tau.join(T, R);
 		}
-		T.reorder(hcutof,fcutof);
+		//T.reorder(hcutof,fcutof);
 		scopes.pop();
 		if(scopes.empty()){
 			declareunhandled(T);
@@ -686,13 +696,21 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	};
 
 	public Tau visit( InstallStatement n, Tau T ){
+		Tau T1=T;
 		for (Pair<String,OLSyntaxNode> P : n.handlersFunction().pairs()) {
 		String id=P.key();
 		OLSyntaxNode fun=P.value();	
-		Handler H=new Handler(id, fun,scopes.peek());
-		T.addHandler(H);
+		String scope;
+		if(scopes.empty()){
+			scope="main";
 		}
-		return T;
+		else{
+			scope=scopes.peek();
+		}
+		Handler H=new Handler(id, fun,scope);
+		T1.addHandler(H);
+		}
+		return T1;
 	};
 
 	public Tau visit( CompensateStatement n, Tau T ){
@@ -700,10 +718,18 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	};
 
 	public Tau visit( ThrowStatement n, Tau T ){
-			System.out.println("test2");
-			Fault F=new Fault(n.id(), scopes.peek(), n.context(), n.expression());
-			T.addFault(F);
-			return T;
+		String scope;	
+		Tau T1=T;
+		if(scopes.empty()){
+			scope="main";
+		}
+		else{
+			scope=scopes.peek();
+		}
+			Fault F=new Fault(n.id(), scope, n.context(), n.expression());
+
+			T1.addFault(F);
+			return T1;
 	};
 
 	public Tau visit( ExitStatement n, Tau T ){
@@ -992,7 +1018,7 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	public void declareunhandled(Tau T){
 		ArrayList<Fault> Faults=T.getunhandledFaults();
 		for (Fault fault : Faults) {
-			String faultmessage="the throw fault"+fault.id()+"is not handled";
+			String faultmessage="the thrown fault "+fault.id()+" is not handled";
 			FaultHandler.throwFault(new FaultFault(faultmessage,fault.parsingContext()),false);
 		}		
 	}
