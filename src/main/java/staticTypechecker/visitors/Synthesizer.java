@@ -193,11 +193,12 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	};
 
 	public Tau visit( SequenceStatement n, Tau T ){
+		Tau T1=new Tau(T.getType(), T);
 		for(OLSyntaxNode child : n.children()){
-			Tau temp = this.synthesize(child, T);
-			T=Tau.join(T,temp);
+			Tau temp = this.synthesize(child, T1);
+			T1=Tau.join(T1,temp);
 		}
-		return T;
+		return T1;
 	};
 
 	public Tau visit( NDChoiceStatement n, Tau T ){
@@ -210,14 +211,14 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		}
 		
 		if(trees.size() == 1){
-			T.changeType(trees.get(0));
-			return T;
+			Tau T3=new Tau(trees.get(0), T);
+			return T3;
 	
 		}
 		else{
-			Type T3 = new ChoiceType(trees);	
-			T.changeType(T3);
-			return T;
+			Type T4 = new ChoiceType(trees);	
+			Tau T5=new Tau(T4, T);
+			return T5;
 		}
 	};
 
@@ -239,8 +240,8 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		for(ArrayList<Path> a : this.pathsAlteredInWhile){
 			a.add(p_in);
 		}
-		T.changeType(T1);
-		return T;
+		Tau T2=new Tau(T1, T);
+		return T2;
 	};
 
 	public Tau visit( RequestResponseOperationStatement n, Tau T ){
@@ -260,11 +261,11 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		// given that p_in is of type T_in find the type of the behaviour
 		Type T_update = T.getType().shallowCopyExcept(p_in);
 		TypeUtils.setTypeOfNodeByPath(p_in, T_in, T_update);
-		T.changeType(T_update);
-		Tau T1 = this.synthesize(n.process(), T);
+		Tau T1=new Tau(T_update, T); 
+		Tau T2 = this.synthesize(n.process(), T1);
 		
 		// check that p_out is a subtype of T_out 
-		ArrayList<Type> possibleTypes = TypeUtils.findNodesExact(p_out, T1.getType(), true, false); // the possible types of p_out after the behaviour
+		ArrayList<Type> possibleTypes = TypeUtils.findNodesExact(p_out, T2.getType(), true, false); // the possible types of p_out after the behaviour
 		
 		Type p_out_type;
 		if(possibleTypes.size() == 1){
@@ -276,7 +277,7 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 
 		this.check(p_out_type, T_out, n.context(), "operation \"" + op.name() + "\" does not have the expected return type.\nActual return type:\n" + p_out_type.prettyString() + "\n\nExpected return type:\n" + T_out.prettyString());
 
-		return T1;
+		return T2;
 	};
 
 	public Tau visit( NotificationOperationStatement n, Tau T ){
@@ -310,8 +311,8 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 			Path path = new Path(((VariableExpressionNode)expression).variablePath().path());
 			Type T1 = T.getType().shallowCopyExcept(path);
 			TypeUtils.setTypeOfNodeByPath(path, type, T1);
-			T.changeType(T1);
-			return T;
+			Tau T2=new Tau(T1, T);
+			return T2;
 		}
 		
 		// else it is just a normal oneway invocation
@@ -357,8 +358,8 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		for(ArrayList<Path> a : this.pathsAlteredInWhile){
 			a.add(p_in);
 		}
-		T.changeType(T1);
-		return T;
+		Tau T2=new Tau(T1, T);
+		return T2;
 	};
 
 	public Tau visit( LinkInStatement n, Tau T ){
@@ -373,7 +374,6 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		// retrieve the type of the expression
 		OLSyntaxNode e = n.expression();
 		Tau T_e = this.synthesize(e, T);
-		
 		// update the type of the node
 		Path path = new Path(n.variablePath().path());
 		Type T1 = T.getType().shallowCopyExcept(path);
@@ -383,8 +383,9 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		for(ArrayList<Path> a : this.pathsAlteredInWhile){
 			a.add(path);
 		}
-		T.changeType(T1);
-		return T;
+		Tau T2=new Tau(T1, T);
+
+		return T2;
 	};
 
 	@Override
@@ -397,8 +398,8 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		Tau typeOfRightSide = this.synthesize(n.expression(), T);
 		this.deriveTypeAndUpdateNode(path, T1, OperandType.ADD, typeOfLeftSide.getType(), typeOfRightSide.getType(), n.context());
 
-		T.changeType(T1);
-		return T;
+		Tau T2=new Tau(T1, T);
+		return T2;
 	}
 
 	@Override
@@ -411,8 +412,8 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		Tau typeOfRightSide = this.synthesize(n.expression(), T);
 		this.deriveTypeAndUpdateNode(path, T1, OperandType.SUBTRACT, typeOfLeftSide.getType(), typeOfRightSide.getType(), n.context());
 
-		T.changeType(T1);
-		return T;
+		Tau T2=new Tau(T1, T);
+		return T2;
 	}
 
 	@Override
@@ -425,8 +426,8 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		Tau typeOfRightSide = this.synthesize(n.expression(), T);
 		this.deriveTypeAndUpdateNode(path, T1, OperandType.MULTIPLY, typeOfLeftSide.getType(), typeOfRightSide.getType(), n.context());
 		
-		T.changeType(T1);
-		return T;
+		Tau T2=new Tau(T1, T);
+		return T2;
 	}
 
 	@Override
@@ -440,8 +441,8 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 
 		this.deriveTypeAndUpdateNode(path, T1, OperandType.DIVIDE, typeOfLeftSide.getType(), typeOfRightSide.getType(), n.context());
 		
-		T.changeType(T1);
-		return T;
+		Tau T2=new Tau(T1, T);
+		return T2;
 	}
 
 	/**
@@ -467,18 +468,18 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	 */
 	public Tau visit( IfStatement n, Tau T ){
 		ChoiceType resultType = new ChoiceType();
-		int fcutof=T.fcutof();
-		T.setfcutof(T.getunhandledFaults().size());
-		boolean handled=false;
+		//int fcutof=T.fcutof();
+		//T.setfcutof(T.getunhandledFaults().size());
+		//boolean handled=false;
 		for(Pair<OLSyntaxNode, OLSyntaxNode> p : n.children()){
 			OLSyntaxNode expression = p.key();
 			OLSyntaxNode body = p.value();
 			Tau typeOfEx = this.synthesize(expression, T);
 			this.check(typeOfEx.getType(), Type.BOOL(), n.context(), "Guard of if-statement is not subtype of bool { ? }. Found type:\n" + typeOfEx.getType().prettyString()); // check that expression is of type bool
 			Tau T1 = this.synthesize(body, T);
-			if(T1.ishandled()){
-				handled=true;
-			}
+			//if(T1.ishandled()){
+			//	handled=true;
+			//}
 			if(!T.ishandled() && T1.ishandled()){				
 				resultType.addChoiceUnsafe(this.synthesize(T1.Handler().body(),T1).getType());
 			}
@@ -496,19 +497,19 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		}
 		
 		if(resultType.choices().size() == 1){
-			T.changeType(resultType.choices().get(0));
+			Tau T2=new Tau(resultType.choices().get(0), T);
 			//if(handled){
-			T.cut();
+			//T2.cut();
 			//}
-			T.setfcutof(fcutof);
-			return T;
+			//T2.setfcutof(fcutof);
+			return T2;
 		}
-			
+		Tau T3=new Tau(resultType, T);
 		//if(handled){
-			T.cut();
+			//T3.cut();
 			//}
-			T.setfcutof(fcutof);
-			return T;
+			//T3.setfcutof(fcutof);
+			return T3;
 	};
 
 	public Tau visit( DefinitionCallStatement n, Tau T ){
@@ -527,7 +528,7 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		Tau typeOfCondition = this.synthesize(condition, T);
 		this.check(typeOfCondition.getType(), Type.BOOL(), n.context(), "Guard of while loop is not of type bool. Found type:\n" + typeOfCondition.getType().prettyString()); // check that the initial condition is of type bool
 
-		Tau originalState = T; // saved here, since it is used in the fallback plan
+		Tau originalState = new Tau(T.getType(), T); // saved here, since it is used in the fallback plan
 
 		// the return type is a conjunction between the original state and the one found through the iterations OR the fallback
 		ChoiceType result = new ChoiceType();
@@ -545,7 +546,8 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 				result.addChoiceUnsafe(mergedState);
 				this.pathsAlteredInWhile.pop();
 				R.changeType(result);
-				return R;
+				Tau T1=new Tau(result, R);
+				return T1;
 			}
 
 			mergedState.addChoiceUnsafe(R.getType());
@@ -558,53 +560,53 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		WarningHandler.throwWarning("could not determine the resulting type of the while loop, affected types may be incorrect from here", n.context());
 		
 		this.pathsAlteredInWhile.pop();
-		originalState.changeType(result.convertIfPossible());
-		return originalState;
+		Tau T1=new Tau(result, T);
+		return T1;
 	};
 
 	public Tau visit( OrConditionNode n, Tau T ){
-		T.changeType(Type.BOOL());
-		return T;
+		Tau T1=new Tau(Type.BOOL());
+		return T1;
 	};
 
 	public Tau visit( AndConditionNode n, Tau T ){
-		T.changeType(Type.BOOL());
-		return T;
+		Tau T1=new Tau(Type.BOOL());
+		return T1;
 	};
 
 	public Tau visit( NotExpressionNode n, Tau T ){
-		T.changeType(Type.BOOL());
-		return T;
+		Tau T1=new Tau(Type.BOOL());
+		return T1;
 	};
 
 	public Tau visit( CompareConditionNode n, Tau T ){;
-		T.changeType(Type.BOOL());
-		return T;
+		Tau T1=new Tau(Type.BOOL());
+		return T1;
 	};
 
 	public Tau visit( ConstantIntegerExpression n, Tau T ){
-		T.changeType(Type.INT());
-		return T;
+		Tau T1=new Tau(Type.INT());
+		return T1;
 	};
 
 	public Tau visit( ConstantDoubleExpression n, Tau T ){
-		T.changeType(Type.DOUBLE());
-		return T;
+		Tau T1=new Tau(Type.DOUBLE());
+		return T1;
 	};
 
 	public Tau visit( ConstantBoolExpression n, Tau T ){
-		T.changeType(Type.BOOL());
-		return T;
+		Tau T1=new Tau(Type.BOOL());
+		return T1;
 	};
 
 	public Tau visit( ConstantLongExpression n, Tau T ){
-		T.changeType(Type.LONG());
-		return T;
+		Tau T1=new Tau(Type.LONG());
+		return T1;
 	};
 
 	public Tau visit( ConstantStringExpression n, Tau T ){
-		 T.changeType(Type.STRING());
-		 return T;
+		Tau T1=new Tau(Type.STRING());
+		return T1;
 	};
 
 	public Tau visit( ProductExpressionNode n, Tau T ){
@@ -640,9 +642,8 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 				currType = ChoiceType.fromBasicTypes(basicTypes);
 			}
 		}
-
-		 T.changeType(currType);
-		 return T;
+		Tau T1=new Tau(currType, T);
+		 return T1;
 	}
 
 	/**
@@ -651,19 +652,18 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	public Tau visit( VariableExpressionNode n, Tau T ){
 		Path path = new Path(n.variablePath().path());
 		ArrayList<Type> types = TypeUtils.findNodesExact(path, T.getType(), false, false);
-
 		if(types.isEmpty()){ // return void type if no nodes was found
-			T.changeType(Type.VOID());
-			return T;
+			Tau T1=new Tau(Type.VOID());
+			return T1;
 		}
 		else if(types.size() == 1){ // if only one node was found, return it
-			T.changeType(types.get(0));
-			return T;
+			Tau T2=new Tau(types.get(0));
+			return T2;
 		}
 		else{ // if more nodes were found, return the disjunction between them
-			Type T1= new ChoiceType(types);
-			T.changeType(T1);
-			return T;
+			Type T3= new ChoiceType(types);
+			Tau T4=new Tau(T3);
+			return T4;
 		}
 	};
 
@@ -696,7 +696,7 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	};
 
 	public Tau visit( InstallStatement n, Tau T ){
-		Tau T1=T;
+		Tau T1=new Tau(T.getType(), T); 
 		for (Pair<String,OLSyntaxNode> P : n.handlersFunction().pairs()) {
 		String id=P.key();
 		OLSyntaxNode fun=P.value();	
@@ -719,7 +719,7 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 
 	public Tau visit( ThrowStatement n, Tau T ){
 		String scope;	
-		Tau T1=T;
+		Tau T1=new Tau(T.getType(), T); 
 		if(scopes.empty()){
 			scope="main";
 		}
@@ -776,8 +776,8 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		}
 
 		for(InlineType tree : trees){
-			T.changeType(tree);
-			Tau typeOfExpression = this.synthesize(n.rightExpression(),T );
+			Tau T2=new Tau(tree, T);
+			Tau typeOfExpression = this.synthesize(n.rightExpression(),T2 );
 	
 			// find the nodes to update and their parents
 			ArrayList<Pair<InlineType, String>> leftSideNodes = TypeUtils.findParentAndName(leftPath, tree, true, false);
@@ -796,9 +796,8 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		for(ArrayList<Path> a : this.pathsAlteredInWhile){
 			a.add(leftPath);
 		}
-
-		T.changeType(T1);
-		return T;
+		Tau T3=new Tau(T1, T);
+		return T3;
 	};
 
 	public Tau visit( RunStatement n, Tau T ){
@@ -822,8 +821,8 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 			a.add(path);
 		}
 
-		T.changeType(T1);
-		return T;
+		Tau T2=new Tau(T1, T);
+		return T2;
 	};
 
 	public Tau visit( ValueVectorSizeExpressionNode n, Tau T ){
@@ -867,14 +866,14 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	};
 
 	public Tau visit( InstanceOfExpressionNode n, Tau T ){
-		T.changeType(Type.BOOL());
-		return T;
+		Tau T1=new Tau(Type.BOOL(), T);
+		return T1;
 	};
 
 	public Tau visit( TypeCastExpressionNode n, Tau T ){ 
 	 Type T1 =	new InlineType(BasicTypeDefinition.of(n.type()), null, null, false);
-	 T.changeType(T1);
-	 return T;
+	 Tau T2=new Tau(T1, T);
+	 return T2;
 	};
 
 	public Tau visit( SynchronizedStatement n, Tau T ){
@@ -882,7 +881,6 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	};
 
 	public Tau visit( CurrentHandlerStatement n, Tau T ){
-		//
 		return T;
 	};
 
@@ -899,13 +897,13 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 		ArrayList<Type> types = TypeUtils.findNodesExact(path, T.getType(), false, false);
 
 		if(types.size() == 1){
-			T.changeType(types.get(0));
-			return T;
+			Tau T2= new Tau(types.get(0), T);
+			return T2;
 		}
 		else{
 			Type T1 = new ChoiceType(types);
-			 T.changeType(T1);
-			 return T;
+			Tau T3= new Tau(T1, T);
+			 return T3;
 		}
 	};
 
@@ -967,7 +965,7 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 
 	public Tau visit( ServiceNode n, Tau T ){
 		Tau result;
-		Tau T1 = T;
+		Tau T1 = new Tau(T.getType(), T);
 
 		if(n.parameterConfiguration().isPresent()){
 			Path path = new Path(n.parameterConfiguration().get().variablePath());

@@ -1,5 +1,4 @@
 package staticTypechecker.entities;
-import  staticTypechecker.entities.Fault;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.IdentityHashMap;
@@ -23,24 +22,37 @@ public class Tau{
     public Tau(Type T){
         this.T=T;
         this.ishandeled=false;
-        hcutof=0;
-        fcutof=0;
+        this.hcutof=0;
+        this.fcutof=0;
     }
-    public Tau(Type T,Fault F){
-        this.T=T;
-        this.ishandeled=false;
-        unhandledfaults.add(F);
-        hcutof=0;
-        fcutof=1;
+    //public Tau(Type T,Fault F){
+        //this.T=T;
+        //this.ishandeled=false;
+        //unhandledfaults.add(F);
+        //hcutof=0;
+        //fcutof=1;
 
-    }
+    //}
     public Tau(Type T,Fault F,Handler H){
         this.T=T;
         this.ishandeled=false;
         this.unhandledfaults.add(F);
         this.handlers.add(H);
-        hcutof=1;
-        fcutof=1;
+        this.hcutof=1;
+        this.fcutof=1;
+    }
+    public Tau(Type T,Tau Ta){
+        this.T=T;
+        this.ishandeled=Ta.ishandled();
+        for (Fault fault : Ta.getunhandledFaults()) {
+            this.unhandledfaults.add(fault);
+        }
+        for (Handler handle : Ta.gethandlers()) {
+            this.handlers.add(handle);
+        }
+        this.handlers=Ta.gethandlers();
+        hcutof=Ta.hcutof();
+        fcutof=Ta.fcutof();
     }
     public Boolean ishandled(){
         return this.ishandeled;

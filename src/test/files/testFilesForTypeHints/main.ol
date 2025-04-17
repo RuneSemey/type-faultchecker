@@ -41,6 +41,10 @@ service MyService{
 
 		// case 4
 		d = "hey"
+		if(true){
+			install(myfault=>d=10)
+			throw(myfault)
+		}
 		assert@assertions(d instanceof int)
 	}
 }
