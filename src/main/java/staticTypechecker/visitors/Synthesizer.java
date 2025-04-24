@@ -477,38 +477,42 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 			Tau typeOfEx = this.synthesize(expression, T);
 			this.check(typeOfEx.getType(), Type.BOOL(), n.context(), "Guard of if-statement is not subtype of bool { ? }. Found type:\n" + typeOfEx.getType().prettyString()); // check that expression is of type bool
 			Tau T1 = this.synthesize(body, T);
-			//if(T1.ishandled()){
-			//	handled=true;
-			//}
 			if(!T.ishandled() && T1.ishandled()){				
 				resultType.addChoiceUnsafe(this.synthesize(T1.Handler().body(),T1).getType());
 			}
 			else{
 			resultType.addChoiceUnsafe(T1.getType());
+			if(T.getunhandledFaults().size()<T1.getunhandledFaults().size()){
+			List<Fault> temp=T1.getunhandledFaults().subList(T.getunhandledFaults().size(), T1.getunhandledFaults().size());
+			T.addPhantomfault(temp);	
+			}
 			}
 		}
 
 		OLSyntaxNode elseProcess = n.elseProcess();
 		if(elseProcess != null){ // there is an else clause
-			resultType.addChoiceUnsafe(this.synthesize(elseProcess, T).getType());
+			Tau T2=this.synthesize(elseProcess, T);
+			if(!T.ishandled() && T2.ishandled()){				
+				resultType.addChoiceUnsafe(this.synthesize(T2.Handler().body(),T2).getType());
+			}
+			else{
+			resultType.addChoiceUnsafe(T2.getType());
+			if(T.getunhandledFaults().size()<T2.getunhandledFaults().size()){
+			List<Fault> temp=T2.getunhandledFaults().subList(T.getunhandledFaults().size(), T2.getunhandledFaults().size());
+			T.addPhantomfault(temp);	
+			}
+		}
 		}
 		else{ // there is not else clause, here we add the initial state as choice as well, since we may not enter the if statement
 			resultType.addChoiceUnsafe(T.getType());
 		}
 		
 		if(resultType.choices().size() == 1){
-			Tau T2=new Tau(resultType.choices().get(0), T);
-			//if(handled){
-			//T2.cut();
-			//}
-			//T2.setfcutof(fcutof);
-			return T2;
+			Tau T3=new Tau(resultType.choices().get(0), T);
+
+			return T3;
 		}
 		Tau T3=new Tau(resultType, T);
-		//if(handled){
-			//T3.cut();
-			//}
-			//T3.setfcutof(fcutof);
 			return T3;
 	};
 
@@ -553,7 +557,6 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 			mergedState.addChoiceUnsafe(R.getType());
 			T = R;
 		}
-
 		// we did not find a steady state in the while loop. Here we do the fallback plan, which is to undefine all variables changed in the while loop
 		result.addChoiceUnsafe( TypeUtils.undefine(originalState.getType(), this.pathsAlteredInWhile.peek()) );
 
@@ -1015,9 +1018,14 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	}
 	public void declareunhandled(Tau T){
 		ArrayList<Fault> Faults=T.getunhandledFaults();
+		ArrayList<Fault> pFaults=T.phantoFaults();
 		for (Fault fault : Faults) {
 			String faultmessage="the thrown fault "+fault.id()+" is not handled";
 			FaultHandler.throwFault(new FaultFault(faultmessage,fault.parsingContext()),false);
+		}
+		for (Fault fault : pFaults) {
+			String faultmessage="the thrown fault "+fault.id()+" is in a if statement and may not be handled";
+			FaultHandler.throwFault(new FaultFault(faultmessage,fault.parsingContext()),false);			
 		}		
 	}
 }
