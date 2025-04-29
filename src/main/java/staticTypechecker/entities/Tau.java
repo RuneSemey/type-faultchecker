@@ -48,6 +48,7 @@ public class Tau{
             this.phantomFaults.add(fault);
         }
         this.handlers=Ta.gethandlers();
+        this.H=Ta.Handler();
         hcutof=Ta.hcutof();
         fcutof=Ta.fcutof();
     }
@@ -73,7 +74,6 @@ public class Tau{
         ArrayList<Handler> H=new ArrayList(this.handlers.subList(0, this.hcutof));
         this.handlers=H;
         this.hcutof=hcutof;
-        this.ishandeled=false;
         if(this.unhandledfaults.size()>0){
         ArrayList<Fault> F=new ArrayList(this.unhandledfaults.subList(0, this.fcutof));
         ArrayList<Fault> temp=new ArrayList<Fault>(this.unhandledfaults.subList(this.fcutof, this.unhandledfaults.size()));
@@ -84,11 +84,9 @@ public class Tau{
         }
         this.fcutof=fcutof;
     }
-    public void cut(){
-        ArrayList<Fault> F=new ArrayList(this.unhandledfaults.subList(0, this.fcutof));
-        this.unhandledfaults.clear();
-        this.handledfaults.clear();
-        this.unhandledfaults=F;
+    public void cut(int hcutof){
+        ArrayList<Handler> H=new ArrayList(this.gethandlers().subList(0, this.hcutof));
+        this.handlers=H;
     }
     public void addFault(Fault F){
         if(this.unhandledfaults.contains(F)){
@@ -113,7 +111,7 @@ public class Tau{
         if(this.ishandeled==false ){
         for (int i = this.handlers.size() - 1; i >= this.hcutof; i--) {
             if(this.ishandeled==false ){
-                if(this.handlers.get(i).id()==id){
+                if(this.handlers.get(i).id().equals(id)){
                     this.ishandeled=true;
                     this.handledfaults.add(F);
                     this.H=this.handlers.get(i);
@@ -144,14 +142,22 @@ public class Tau{
         }
     }
     public static Tau join(Tau tau1,Tau tau2){
-        
         ArrayList<Handler> H=new ArrayList(tau2.gethandlers().subList(tau2.hcutof(), tau2.gethandlers().size()));
         ArrayList<Fault> F=tau2.getunhandledFaults();
+        ArrayList<Fault> f1=tau2.phantomFaults();
         tau1.changeType(tau2.getType());
         tau1.addFaults(F);
         tau1.addHandlers(H);
+        tau1.phantomFaults=f1;
+        if(tau1.ishandled()!=true){
+            tau1.setisHandled(tau2.ishandled());
+            tau1.H=tau2.Handler();
+        }
         return tau1;
 
+    }
+    public void setisHandled(Boolean h){
+        this.ishandeled=h;
     }
     public Handler Handler(){
         return this.H;

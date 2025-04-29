@@ -152,7 +152,9 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	 */
 	public Tau synthesize(){
 		Tau t=new Tau(Type.VOID());
-		return this.module.program().accept(this, t);
+		Tau t1=this.module.program().accept(this, t);
+		declareunhandled(t1);
+		return t1;
 	}
 
 	/**
@@ -468,9 +470,6 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	 */
 	public Tau visit( IfStatement n, Tau T ){
 		ChoiceType resultType = new ChoiceType();
-		//int fcutof=T.fcutof();
-		//T.setfcutof(T.getunhandledFaults().size());
-		//boolean handled=false;
 		for(Pair<OLSyntaxNode, OLSyntaxNode> p : n.children()){
 			OLSyntaxNode expression = p.key();
 			OLSyntaxNode body = p.value();
@@ -677,25 +676,35 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	public Tau visit( Scope n, Tau T ){
 		int hcutof=T.hcutof();
 		int fcutof=T.fcutof();
-		T.sethcutof(T.gethandlers().size());
-		T.setfcutof(T.getunhandledFaults().size());
+		boolean prior=T.ishandled();
+		boolean split=false;
+		Tau T2=new Tau(T.getType(), T);
+		T2.setisHandled(false);
+		T2.sethcutof(T.gethandlers().size());
+		T2.setfcutof(T.getunhandledFaults().size());
 		scopes.push(n.id());
-		Tau R=this.synthesize(n.body(),T);
+		Tau R=this.synthesize(n.body(),T2);
+		
 		if(R.ishandled()){
-			Tau T1=this.synthesize(R.Handler().body(),T);
-			T.reorder(hcutof,fcutof);
-			T=Tau.join(T,T1);
+			split=true;
+			R.setisHandled(prior);
+			R.cut(hcutof);
+			Tau T1=this.synthesize(R.Handler().body(),R);
+			T2=T1;
 		}else{
-			T.reorder(hcutof,fcutof);
-			R.reorder(hcutof,fcutof);
-			T=Tau.join(T, R);
+			T2=R;
 		}
-		//T.reorder(hcutof,fcutof);
+		if(split){
+		T2.reorder(T2.hcutof(),fcutof);
+		T2.sethcutof(hcutof);
+		}
+		else{
+		T2.reorder(hcutof,fcutof);	
+		}
 		scopes.pop();
-		if(scopes.empty()){
-			declareunhandled(T);
-		}
-		return T;
+		T2.setisHandled(prior);
+		return T2;
+
 	};
 
 	public Tau visit( InstallStatement n, Tau T ){
