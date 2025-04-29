@@ -1018,7 +1018,7 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	}
 	public void declareunhandled(Tau T){
 		ArrayList<Fault> Faults=T.getunhandledFaults();
-		ArrayList<Fault> pFaults=T.phantoFaults();
+		ArrayList<Fault> pFaults=T.phantomFaults();
 		for (Fault fault : Faults) {
 			String faultmessage="the thrown fault "+fault.id()+" is not handled";
 			FaultHandler.throwFault(new FaultFault(faultmessage,fault.parsingContext()),false);

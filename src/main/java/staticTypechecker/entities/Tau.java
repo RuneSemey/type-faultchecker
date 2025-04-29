@@ -1,4 +1,5 @@
 package staticTypechecker.entities;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.IdentityHashMap;
@@ -17,6 +18,7 @@ public class Tau{
     private int hcutof;
     private int fcutof;
     private ArrayList<Fault> handledfaults=new ArrayList<Fault>();
+    private ArrayList<Fault> phantomFaults=new ArrayList<Fault>();
     private ArrayList<Fault> unhandledfaults=new ArrayList<Fault>();
     private ArrayList<Handler> handlers= new ArrayList<Handler>();
     public Tau(Type T){
@@ -25,14 +27,6 @@ public class Tau{
         this.hcutof=0;
         this.fcutof=0;
     }
-    //public Tau(Type T,Fault F){
-        //this.T=T;
-        //this.ishandeled=false;
-        //unhandledfaults.add(F);
-        //hcutof=0;
-        //fcutof=1;
-
-    //}
     public Tau(Type T,Fault F,Handler H){
         this.T=T;
         this.ishandeled=false;
@@ -49,6 +43,9 @@ public class Tau{
         }
         for (Handler handle : Ta.gethandlers()) {
             this.handlers.add(handle);
+        }
+        for( Fault fault:Ta.phantomFaults()){
+            this.phantomFaults.add(fault);
         }
         this.handlers=Ta.gethandlers();
         hcutof=Ta.hcutof();
@@ -161,6 +158,12 @@ public class Tau{
     }
     public ArrayList<Fault> getunhandledFaults(){
         return this.unhandledfaults;
+    }
+    public ArrayList<Fault> phantomFaults(){
+        return this.phantomFaults;
+    }
+    public void addPhantomfault(List<Fault> P){
+        this.phantomFaults.addAll(P);
     }
     public void changeType(Type T){
         this.T=T;
