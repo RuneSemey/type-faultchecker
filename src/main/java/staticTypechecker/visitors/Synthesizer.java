@@ -116,8 +116,6 @@ import staticTypechecker.faults.WarningHandler;
 
 /**
  * Synthesizer for a parsed Jolie abstract syntax tree. Synthesizes the type of each node.
- * 
- * @author Kasper Bergstedt (kasper.bergstedt@hotmail.com)
  */
 public class Synthesizer implements OLVisitor<Tau, Tau> {
 	private static HashMap<String, Synthesizer> synths = new HashMap<>(); 	// a static map, which maps module paths to synthesizers
@@ -1025,6 +1023,9 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 			FaultHandler.throwFault(new TypeFault(faultMessage, ctx), terminate);
 		}
 	}
+	/**
+	 * declare all unhandled fault to the user
+	 */
 	public void declareunhandled(Tau T){
 		ArrayList<Fault> Faults=T.getunhandledFaults();
 		ArrayList<Fault> pFaults=T.phantomFaults();
