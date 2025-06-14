@@ -470,12 +470,13 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 	 */
 	public Tau visit( IfStatement n, Tau T ){
 		ChoiceType resultType = new ChoiceType();
+		Tau Tn=new Tau(T.getType(), T); 
 		for(Pair<OLSyntaxNode, OLSyntaxNode> p : n.children()){
 			OLSyntaxNode expression = p.key();
 			OLSyntaxNode body = p.value();
-			Tau typeOfEx = this.synthesize(expression, T);
+			Tau typeOfEx = this.synthesize(expression, Tn);
 			this.check(typeOfEx.getType(), Type.BOOL(), n.context(), "Guard of if-statement is not subtype of bool { ? }. Found type:\n" + typeOfEx.getType().prettyString()); // check that expression is of type bool
-			Tau T1 = this.synthesize(body, T);
+			Tau T1 = this.synthesize(body, Tn);
 			if(!T.ishandled() && T1.ishandled()){				
 				resultType.addChoiceUnsafe(this.synthesize(T1.Handler().body(),T1).getType());
 			}
@@ -490,7 +491,7 @@ public class Synthesizer implements OLVisitor<Tau, Tau> {
 
 		OLSyntaxNode elseProcess = n.elseProcess();
 		if(elseProcess != null){ // there is an else clause
-			Tau T2=this.synthesize(elseProcess, T);
+			Tau T2=this.synthesize(elseProcess, Tn);
 			if(!T.ishandled() && T2.ishandled()){				
 				resultType.addChoiceUnsafe(this.synthesize(T2.Handler().body(),T2).getType());
 			}

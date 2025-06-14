@@ -47,7 +47,6 @@ public class Tau{
         for( Fault fault:Ta.phantomFaults()){
             this.phantomFaults.add(fault);
         }
-        this.handlers=Ta.gethandlers();
         this.H=Ta.Handler();
         hcutof=Ta.hcutof();
         fcutof=Ta.fcutof();
